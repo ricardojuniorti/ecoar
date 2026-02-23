@@ -1,16 +1,17 @@
 <template>
   <div class="container mt-4">
     <div class="d-flex justify-content-between align-items-center mb-4">
-      <h2 class="ecoar-title">🎵 Catálogo</h2>
+      <h3 class="ecoar-title d-flex align-items-center m-0">
+        <img src="@/assets/img/violino.png" alt="Violino" class="title-icon me-2">
+        CATÁLOGO
+      </h3>
       <router-link 
         v-if="isAdmin" 
         :to="{ path: '/novo', query: route.query }" 
-        class="btn btn-gold shadow-sm"
-      >
+        class="btn btn-gold shadow-sm">
         <i class="bi bi-plus-lg"></i> Adicionar Música
       </router-link>
     </div>
-
     <div class="card shadow-sm border-0 mb-4 ecoar-search-bg">
       <div class="card-body p-3">
         <div class="row align-items-center">
@@ -323,6 +324,24 @@ onMounted(carregarDados);
 
 <style src="vue-multiselect/dist/vue-multiselect.css"></style>
 <style scoped>
+
+.ecoar-title {
+  color: #41403f;
+  font-weight: bold;
+  letter-spacing: 1px;
+  text-align: left; /* Garante alinhamento à esquerda */
+  display: flex;
+  align-items: center;
+}
+
+.title-icon {
+  height: 60px; /* Ajuste fixo para ficar proporcional ao h2 */
+  width: auto;
+  object-fit: contain;
+  /* Se a imagem que gerei acima tiver fundo, o navegador a renderizará 
+     com transparência se você salvá-la como .png transparente */
+}
+
 .ecoar-search-bg { background-color: #1a302e; border-radius: 12px; }
 .border-gold { border-color: #c58d2b !important; }
 .ecoar-header { background-color: #1a302e; }

@@ -80,9 +80,12 @@
                 <button type="submit" class="btn btn-gold flex-grow-1 py-3 shadow">
                   <i class="bi bi-check-lg me-2"></i> {{ editando ? 'Salvar Alterações' : 'Gravar Música' }}
                 </button>
-                <button type="button" @click="$router.push('/')" class="btn btn-outline-secondary px-4">
-                  Cancelar
-                </button>
+                <button 
+                type="button" 
+                @click="router.push({ path: '/', query: route.query })" 
+                class="btn btn-outline-secondary">
+                Cancelar
+              </button>
               </div>
             </form>
           </div>
@@ -185,8 +188,10 @@ const salvarMusica = async () => {
       await api.post('/musicas', dadosParaEnviar);
       alert('Música cadastrada com sucesso!');
     }
-    router.push('/');
+    router.push({ path: '/', query: route.query });
+
   } catch (error) {
+    console.error(error); // Boa prática para você debugar se algo falhar
     alert('Erro ao salvar música. Verifique os campos obrigatórios.');
   }
 };
