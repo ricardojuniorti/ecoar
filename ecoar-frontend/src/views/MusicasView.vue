@@ -57,7 +57,7 @@
           </div>
 
           <div class="col-md-4">
-            <label class="small text-white-50 mb-1 fw-bold">ESTILOS</label>
+            <label class="small text-white-50 mb-1 fw-bold">ESTILO/VIBE</label>
             <VueMultiselect 
               v-model="filtros.estilos" 
               :options="listaEstilos" 
@@ -72,7 +72,7 @@
           </div>
 
           <div class="col-md-4">
-            <label class="small text-white-50 mb-1 fw-bold">MOMENTOS</label>
+            <label class="small text-white-50 mb-1 fw-bold">MOMENTOS SUGERIDOS</label>
             <div class="d-flex gap-2 align-items-center">
               <div class="flex-grow-1">
                 <VueMultiselect 
@@ -239,8 +239,8 @@ const filtros = ref({
 
 const musicaSelecionada = ref(null);
 const paginaAtual = ref(1);
-const itensPorPagina = ref(10);
-const opcoesPagina = [10, 20, 50, 100];
+const itensPorPagina = ref(30);
+const opcoesPagina = [30, 50, 100];
 
 const getYoutubeThumbnail = (url) => {
   if (!url) return null;

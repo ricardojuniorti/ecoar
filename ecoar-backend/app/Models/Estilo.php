@@ -12,6 +12,6 @@ class Estilo extends Model
     protected $fillable = ['descricao'];
 
     public function musicas() {
-    return $this->belongsToMany(Musica::class, 'estilo_musica');
-}
+        return $this->belongsToMany(Musica::class, 'estilo_musica');
+    }
 }
