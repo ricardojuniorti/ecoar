@@ -51,12 +51,11 @@
               label="nome" 
               track-by="id" 
               placeholder="Selecionar artistas..."
-              selectLabel="Adicionar"
-              deselectLabel="Remover"
-              selectedLabel="Selecionado"
+              select-label="Adicionar"
+              deselect-label="Remover"
+              selected-label="Selecionado"
             />
           </div>
-
           <div class="col-md-4">
             <label class="small text-white-50 mb-1 fw-bold">ESTILO/VIBE</label>
             <VueMultiselect 
@@ -66,12 +65,11 @@
               label="descricao" 
               track-by="id" 
               placeholder="Selecionar estilos..."
-              selectLabel="Adicionar"
-              deselectLabel="Remover"
-              selectedLabel="Selecionado"
+              select-label="Adicionar"
+              deselect-label="Remover"
+              selected-label="Selecionado"
             />
           </div>
-
           <div class="col-md-4">
             <label class="small text-white-50 mb-1 fw-bold">MOMENTOS SUGERIDOS</label>
             <div class="d-flex gap-2 align-items-center">
@@ -83,12 +81,12 @@
                   label="descricao" 
                   track-by="id" 
                   placeholder="Selecionar momentos..."
-                  selectLabel="Adicionar"
-                  deselectLabel="Remover"
-                  selectedLabel="Selecionado"
+                  select-label="Adicionar"
+                  deselect-label="Remover"
+                  selected-label="Selecionado"
                 />
               </div>
-              <button v-if="temFiltroAtivo" @click="limparFiltros" class="btn-icon-only text-gold h-38 ms-2" title="Limpar Filtros">
+              <button v-if="temFiltroAtivo" @click="limparFiltros" class="btn-icon-only text-gold h-38 ms-2">
                 <i class="bi bi-eraser-fill"></i> 
               </button>
             </div>
@@ -97,32 +95,32 @@
       </div>
     </div>
 
-    <div class="card shadow border-0 overflow-hidden">
+    <div v-if="carregando" class="text-center py-5 my-5">
+      <div class="spinner-border text-gold" role="status" style="width: 3.5rem; height: 3.5rem;">
+        <span class="visually-hidden">Carregando...</span>
+      </div>
+      <p class="text-gold mt-3 fw-bold animate-pulse">Sintonizando o catálogo...</p>
+    </div>
+
+    <div v-else class="card shadow border-0 overflow-hidden animate-fade-in">
       <div class="table-responsive">
         <table class="table table-hover align-middle mb-0">
           <thead class="ecoar-header text-white">
             <tr>
               <th class="ps-4 cursor-pointer" @click="ordenar('titulo')">
-                NOME DA MÚSICA 
-                <i class="bi ms-1" :class="getIconeOrdenacao('titulo')"></i>
+                NOME DA MÚSICA <i class="bi ms-1" :class="getIconeOrdenacao('titulo')"></i>
               </th>
-              <th class="cursor-pointer" @click="ordenar('artista')">
+              <th>
                 ARTISTA / REFERÊNCIA
-                <i class="bi ms-1" :class="getIconeOrdenacao('artista')"></i>
               </th>
-              <th class="text-center">
-                <span class="d-none d-md-inline">OUVIR</span>
-                <i class="bi bi-headphones d-md-none text-gold"></i>
-              </th>
+              <th class="text-center">OUVIR</th>
               <th v-if="isAdmin" class="text-end pe-4">AÇÕES</th>
             </tr>
           </thead>
           <tbody>
             <tr v-for="musica in musicasPaginadas" :key="musica.id">
               <td class="ps-4 fw-bold">
-                <a href="#" @click.prevent="abrirDetalhes(musica)" class="text-dark music-link">
-                  {{ musica.titulo }}
-                </a>
+                <a href="#" @click.prevent="abrirDetalhes(musica)" class="text-dark music-link">{{ musica.titulo }}</a>
               </td>
               <td>{{ musica.artista?.nome || '---' }}</td>
               <td class="text-center">
@@ -132,43 +130,13 @@
               </td>
               <td v-if="isAdmin" class="text-end pe-4">
                 <div class="d-flex justify-content-end gap-3">
-                  <button @click="editarMusica(musica.id)" class="btn-icon-only text-primary" title="Editar">
-                    <i class="bi bi-pencil-square"></i>
-                  </button>
-                  <button @click="excluirMusica(musica)" class="btn-icon-only text-danger" title="Excluir">
-                    <i class="bi bi-trash"></i>
-                  </button>
+                  <button @click="editarMusica(musica.id)" class="btn-icon-only text-primary"><i class="bi bi-pencil-square"></i></button>
+                  <button @click="excluirMusica(musica)" class="btn-icon-only text-danger"><i class="bi bi-trash"></i></button>
                 </div>
-              </td>
-            </tr>
-            <tr v-if="musicasFiltradas.length === 0">
-              <td :colspan="isAdmin ? 4 : 3" class="text-center py-4 text-muted">
-                Nenhuma música encontrada com os filtros aplicados.
               </td>
             </tr>
           </tbody>
         </table>
-      </div>
-
-      <div class="card-footer bg-white border-0 py-3" v-if="totalPaginas > 1">
-        <div class="d-flex justify-content-between align-items-center">
-          <div class="small text-muted d-none d-md-block">
-            Mostrando <b>{{ musicasPaginadas.length }}</b> de <b>{{ musicasFiltradas.length }}</b> registros
-          </div>
-          <nav>
-            <ul class="pagination pagination-sm mb-0">
-              <li class="page-item" :class="{ disabled: paginaAtual === 1 }">
-                <button class="page-link border-gold text-gold shadow-none" @click="paginaAtual--">Anterior</button>
-              </li>
-              <li v-for="pagina in totalPaginas" :key="pagina" class="page-item" :class="{ active: paginaAtual === pagina }">
-                <button class="page-link border-gold shadow-none" :class="paginaAtual === pagina ? 'bg-gold text-white' : 'text-gold'" @click="paginaAtual = pagina">{{ pagina }}</button>
-              </li>
-              <li class="page-item" :class="{ disabled: paginaAtual === totalPaginas }">
-                <button class="page-link border-gold text-gold shadow-none" @click="paginaAtual++">Próxima</button>
-              </li>
-            </ul>
-          </nav>
-        </div>
       </div>
     </div>
 
@@ -176,44 +144,36 @@
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg overflow-hidden">
           
-          <div v-if="getVideoId(musicaSelecionada?.link)" class="ratio ratio-16x9 border-bottom border-gold border-3 bg-dark">
+          <div v-if="musicaSelecionada && getVideoId(musicaSelecionada.link)" class="ratio ratio-16x9">
             <iframe 
               :src="`https://www.youtube.com/embed/${getVideoId(musicaSelecionada.link)}?rel=0&modestbranding=1`" 
               frameborder="0" 
-              allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" 
               allowfullscreen>
             </iframe>
           </div>
-          <div v-else class="ecoar-header p-5 text-center">
-            <img src="@/assets/img/violino.png" alt="Violino" style="height: 60px; opacity: 0.3;">
-            <p class="text-white-50 mt-2 small">Referência de vídeo não disponível</p>
-          </div>
-
+          
           <div class="ecoar-header p-4 text-white position-relative">
             <h4 class="mb-0 text-gold">{{ musicaSelecionada?.titulo }}</h4>
-            <p class="mb-0 small opacity-75">{{ musicaSelecionada?.artista?.nome || 'Artista não definido' }}</p>
+            <p class="mb-0 small opacity-75">{{ musicaSelecionada?.artista?.nome || '---' }}</p>
             <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 shadow-none" data-bs-dismiss="modal"></button>
           </div>
 
           <div class="modal-body p-4 bg-white">
-            <div class="mb-4">
-              <label class="fw-bold text-muted small d-block mb-2 text-uppercase letter-spacing">Estilos / Vibe</label>
-              <div class="d-flex flex-wrap gap-2">
-                <span v-for="estilo in musicaSelecionada?.estilos" :key="estilo.id" class="badge ecoar-badge px-3 py-2">
-                  {{ estilo.descricao }}
-                </span>
-                <span v-if="!musicaSelecionada?.estilos?.length" class="text-muted small">Nenhum estilo definido</span>
-              </div>
+            <div class="mb-3">
+               <label class="fw-bold text-muted small d-block mb-2 text-uppercase">Estilos / Vibe</label>
+               <div class="d-flex flex-wrap gap-2">
+                 <span v-for="estilo in musicaSelecionada?.estilos" :key="estilo.id" class="badge ecoar-badge px-3 py-2">
+                   {{ estilo.descricao }}
+                 </span>
+               </div>
             </div>
-
             <div class="mb-4">
-              <label class="fw-bold text-muted small d-block mb-2 text-uppercase letter-spacing">Momentos Sugeridos</label>
-              <div class="d-flex flex-wrap gap-2">
-                <span v-for="momento in musicaSelecionada?.momentos" :key="momento.id" class="badge bg-light text-dark border px-3 py-2">
-                  {{ momento.descricao }}
-                </span>
-                <span v-if="!musicaSelecionada?.momentos?.length" class="text-muted small">Nenhum momento sugerido</span>
-              </div>
+               <label class="fw-bold text-muted small d-block mb-2 text-uppercase">Momentos Sugeridos</label>
+               <div class="d-flex flex-wrap gap-2">
+                 <span v-for="momento in musicaSelecionada?.momentos" :key="momento.id" class="badge bg-light text-dark border px-3 py-2">
+                   {{ momento.descricao }}
+                 </span>
+               </div>
             </div>
             <div v-if="musicaSelecionada?.link" class="d-grid mt-2">
               <a :href="musicaSelecionada.link" target="_blank" class="btn btn-gold py-2 shadow-sm fw-bold">
@@ -239,230 +199,132 @@ import VueMultiselect from 'vue-multiselect';
 
 const router = useRouter();
 const route = useRoute();
-
-// --- CONFIGURAÇÃO DE SEGURANÇA ---
 const TOKEN_MESTRE = import.meta.env.VITE_TOKEN_ADMIN;
 const isAdmin = computed(() => route.query.token === TOKEN_MESTRE);
 
-// --- ESTADOS DE DADOS ---
 const musicas = ref([]);
 const artistas = ref([]);
 const listaEstilos = ref([]);
 const listaMomentos = ref([]);
-
-// --- ESTADOS DE FILTRO E PAGINAÇÃO ---
-const filtros = ref({
-  texto: '',
-  artistas: [],
-  estilos: [],
-  momentos: []
-});
+const carregando = ref(false);
+const filtros = ref({ texto: '', artistas: [], estilos: [], momentos: [] });
 const paginaAtual = ref(1);
 const itensPorPagina = ref(30);
 const opcoesPagina = [30, 50, 100];
-
-// --- ESTADOS DE ORDENAÇÃO ---
-const colunaOrdenacao = ref('titulo'); // Coluna inicial
-const ordemAscendente = ref(true);     // Direção inicial (A-Z)
-
-// --- ESTADO DO MODAL ---
+const colunaOrdenacao = ref('titulo');
+const ordemAscendente = ref(true);
 const musicaSelecionada = ref(null);
 
-// --- CICLO DE VIDA ---
 onMounted(() => {
   carregarDados();
-
-  // Listener para parar o vídeo quando o modal fechar
   const modalEl = document.getElementById('modalDetalhes');
   if (modalEl) {
-    modalEl.addEventListener('hidden.bs.modal', () => {
-      // Ao limpar a seleção, o v-if do iFrame no HTML vira false e o som para.
-      musicaSelecionada.value = null;
-    });
+    modalEl.addEventListener('hidden.bs.modal', () => { musicaSelecionada.value = null; });
   }
 });
 
-// --- FUNÇÕES DE CARREGAMENTO ---
 const carregarDados = async () => {
+  carregando.value = true;
   try {
     const [resMusicas, resArtistas, resEstilos, resMomentos] = await Promise.all([
-      api.get('/musicas'),
-      api.get('/artistas'),
-      api.get('/estilos'),
-      api.get('/momentos')
+      api.get('/musicas'), api.get('/artistas'), api.get('/estilos'), api.get('/momentos')
     ]);
     musicas.value = resMusicas.data;
     artistas.value = resArtistas.data;
     listaEstilos.value = resEstilos.data;
     listaMomentos.value = resMomentos.data;
-  } catch (error) {
-    console.error("Erro ao carregar dados:", error);
-  }
+  } catch (error) { console.error(error); }
+  finally { setTimeout(() => { carregando.value = false; }, 400); }
 };
 
-// --- FUNÇÕES DE INTERAÇÃO ---
-const abrirDetalhes = (musica) => {
-  musicaSelecionada.value = musica;
-  const modalEl = document.getElementById('modalDetalhes');
-  let myModal = Modal.getOrCreateInstance(modalEl);
-  myModal.show();
+const ordenar = (col) => {
+  if (colunaOrdenacao.value === col) ordemAscendente.value = !ordemAscendente.value;
+  else { colunaOrdenacao.value = col; ordemAscendente.value = true; }
 };
 
-const excluirMusica = async (musica) => {
-  if (confirm(`Deseja realmente excluir a música "${musica.titulo}"?`)) {
-    try {
-      await api.delete(`/musicas/${musica.id}`);
-      carregarDados();
-    } catch (error) {
-      alert("Erro ao excluir música.");
-    }
-  }
-};
-
-const editarMusica = (id) => {
-  router.push({ path: `/editar/${id}`, query: route.query });
-};
-
-const limparFiltros = () => {
-  filtros.value = { texto: '', artistas: [], estilos: [], momentos: [] };
-};
-
-// --- LÓGICA DE ORDENAÇÃO ---
-const ordenar = (coluna) => {
-  if (colunaOrdenacao.value === coluna) {
-    ordemAscendente.value = !ordemAscendente.value; // Inverte direção
-  } else {
-    colunaOrdenacao.value = coluna; // Muda a coluna
-    ordemAscendente.value = true;   // Reseta para ascendente
-  }
-};
-
-const getIconeOrdenacao = (coluna) => {
-  if (colunaOrdenacao.value !== coluna) return 'bi-arrow-down-up text-muted opacity-50';
+const getIconeOrdenacao = (col) => {
+  if (colunaOrdenacao.value !== col) return 'bi-arrow-down-up text-muted opacity-50';
   return ordemAscendente.value ? 'bi-sort-alpha-down text-gold' : 'bi-sort-alpha-up-alt text-gold';
 };
 
-// --- COMPUTED PROPERTIES (FILTRO + ORDENAÇÃO) ---
 const musicasFiltradas = computed(() => {
-  // 1. Aplica os Filtros
-  let resultado = musicas.value.filter(m => {
-    const texto = filtros.value.texto.toLowerCase();
-    const bateTexto = m.titulo.toLowerCase().includes(texto) || 
-                      (m.artista?.nome || '').toLowerCase().includes(texto);
-    
-    const bateArtista = filtros.value.artistas.length === 0 || 
-                        filtros.value.artistas.some(f => m.artista_id === f.id);
-    
-    const bateEstilos = filtros.value.estilos.length === 0 || 
-                        filtros.value.estilos.every(f => m.estilos.some(e => e.id === f.id));
-    
-    const bateMomentos = filtros.value.momentos.length === 0 || 
-                         filtros.value.momentos.every(f => m.momentos.some(mom => mom.id === f.id));
-    
-    return bateTexto && bateArtista && bateEstilos && bateMomentos;
+  let res = musicas.value.filter(m => {
+    const txt = filtros.value.texto.toLowerCase();
+    return (m.titulo.toLowerCase().includes(txt) || (m.artista?.nome || '').toLowerCase().includes(txt)) &&
+           (!filtros.value.artistas.length || filtros.value.artistas.some(f => m.artista_id === f.id)) &&
+           (!filtros.value.estilos.length || filtros.value.estilos.every(f => m.estilos.some(e => e.id === f.id))) &&
+           (!filtros.value.momentos.length || filtros.value.momentos.every(f => m.momentos.some(mo => mo.id === f.id)));
   });
-
-  // 2. Aplica a Ordenação
-  return resultado.sort((a, b) => {
-    let valorA, valorB;
-
-    if (colunaOrdenacao.value === 'artista') {
-      valorA = (a.artista?.nome || '').toLowerCase();
-      valorB = (b.artista?.nome || '').toLowerCase();
-    } else {
-      valorA = (a[colunaOrdenacao.value] || '').toLowerCase();
-      valorB = (b[colunaOrdenacao.value] || '').toLowerCase();
-    }
-
-    if (valorA < valorB) return ordemAscendente.value ? -1 : 1;
-    if (valorA > valorB) return ordemAscendente.value ? 1 : -1;
-    return 0;
+  return res.sort((a, b) => {
+    let vA = colunaOrdenacao.value === 'artista' ? (a.artista?.nome || '') : a[colunaOrdenacao.value];
+    let vB = colunaOrdenacao.value === 'artista' ? (b.artista?.nome || '') : b[colunaOrdenacao.value];
+    return ordemAscendente.value ? (vA || '').localeCompare(vB || '') : (vB || '').localeCompare(vA || '');
   });
 });
 
 const musicasPaginadas = computed(() => {
-  const inicio = (paginaAtual.value - 1) * itensPorPagina.value;
-  return musicasFiltradas.value.slice(inicio, inicio + itensPorPagina.value);
+  const i = (paginaAtual.value - 1) * itensPorPagina.value;
+  return musicasFiltradas.value.slice(i, i + itensPorPagina.value);
 });
 
 const totalPaginas = computed(() => Math.ceil(musicasFiltradas.value.length / itensPorPagina.value));
+const temFiltroAtivo = computed(() => filtros.value.texto || filtros.value.artistas.length || filtros.value.estilos.length || filtros.value.momentos.length);
+const limparFiltros = () => { filtros.value = { texto: '', artistas: [], estilos: [], momentos: [] }; };
+const getVideoId = (url) => { if (!url) return null; const m = url.match(/^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/); return m?.[2]; };
+const abrirDetalhes = (m) => { musicaSelecionada.value = m; Modal.getOrCreateInstance(document.getElementById('modalDetalhes')).show(); };
+const editarMusica = (id) => router.push({ path: `/editar/${id}`, query: route.query });
+const excluirMusica = async (m) => { if (confirm(`Excluir ${m.titulo}?`)) { await api.delete(`/musicas/${m.id}`); carregarDados(); } };
 
-const temFiltroAtivo = computed(() => {
-  return filtros.value.texto || filtros.value.artistas.length > 0 || 
-         filtros.value.estilos.length > 0 || filtros.value.momentos.length > 0;
-});
-
-// --- HELPERS ---
-const getVideoId = (url) => {
-  if (!url) return null;
-  const regExp = /^.*(youtu\.be\/|v\/|u\/\w\/|embed\/|watch\?v=|\&v=)([^#\&\?]*).*/;
-  const match = url.match(regExp);
-  return (match && match[2].length === 11) ? match[2] : null;
-};
-
-const getYoutubeThumbnail = (url) => {
-  const id = getVideoId(url);
-  return id ? `https://img.youtube.com/vi/${id}/hqdefault.jpg` : null;
-};
-
-// --- WATCHERS ---
-// Reseta para a página 1 sempre que algo mudar na busca ou ordenação
-watch([filtros, itensPorPagina, colunaOrdenacao, ordemAscendente], () => {
-  paginaAtual.value = 1;
-}, { deep: true });
-
+watch([filtros, itensPorPagina, colunaOrdenacao, ordemAscendente], () => { paginaAtual.value = 1; }, { deep: true });
 </script>
 
 <style src="vue-multiselect/dist/vue-multiselect.css"></style>
 <style scoped>
+/* --- PADRÃO ECOAR --- */
 .ecoar-title { color: #41403f; font-weight: bold; letter-spacing: 1px; display: flex; align-items: center; }
 .title-icon { height: 60px; width: auto; object-fit: contain; }
 .ecoar-search-bg { background-color: #1a302e; border-radius: 12px; }
 .border-gold { border-color: #c58d2b !important; }
 .ecoar-header { background-color: #1a302e; }
-.bg-gold { background-color: #c58d2b !important; }
 .text-gold { color: #c58d2b !important; }
+.cursor-pointer { cursor: pointer; user-select: none; }
+
+/* --- INPUT DE BUSCA --- */
 .custom-input { background-color: rgba(255, 255, 255, 0.05); color: white; }
+.custom-input::placeholder { color: #999 !important; opacity: 1; }
 .custom-input:focus { background-color: white; color: #1a302e; }
-.custom-select-dark { background-color: rgba(255, 255, 255, 0.05); color: white; border-radius: 6px; }
-.custom-select-dark option { background-color: #ffffff; color: #1a302e; }
-.h-38 { height: 38px !important; }
-.music-link { text-decoration: none; transition: all 0.3s; }
-.music-link:hover { color: #c58d2b !important; }
-.ecoar-badge { background-color: #1a302e; color: #c58d2b; border: 1px solid #c58d2b; }
-.btn-icon-only { background: none; border: none; cursor: pointer; display: flex; align-items: center; justify-content: center; }
-.btn-icon-only i { font-size: 1.25rem; }
 
-:deep(.multiselect__tags) { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid #c58d2b !important; color: white; }
+/* --- FILTROS (VUE-MULTISELECT) --- */
+:deep(.multiselect__tags) { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid #c58d2b !important; color: white !important; }
 :deep(.multiselect__single), :deep(.multiselect__input) { background: transparent !important; color: white !important; }
+:deep(.multiselect__placeholder) { color: #999 !important; }
+:deep(.multiselect__option--highlight) { background: #c58d2b !important; }
+:deep(.multiselect__option--highlight::after) { background: #c58d2b !important; }
 :deep(.multiselect__tag) { background: #c58d2b !important; }
+:deep(.multiselect__content-wrapper) { background: #1a302e !important; border-color: #c58d2b !important; }
+:deep(.multiselect__option) { background: #1a302e; color: white; }
 
-.pagination .page-link { background-color: transparent; transition: all 0.3s; border-color: #c58d2b; color: #c58d2b; }
-.page-item.active .page-link { background-color: #c58d2b !important; color: white !important; border-color: #c58d2b; }
+/* --- BOTÕES E TABELA --- */
+.btn-gold { background-color: #c58d2b !important; color: white !important; border: none; }
+.btn-icon-only { border: none !important; background: transparent !important; transition: transform 0.2s; outline: none !important; box-shadow: none !important; }
+.btn-icon-only:hover { transform: scale(1.15); opacity: 0.8; }
+.music-link { text-decoration: none; transition: 0.3s; }
+.music-link:hover { color: #c58d2b !important; }
+.pagination .page-link { background-color: transparent; border-color: #c58d2b; color: #c58d2b; }
+.page-item.active .page-link { background-color: #c58d2b !important; color: white !important; }
 
-.modal-content { border-radius: 20px; }
-.letter-spacing { letter-spacing: 0.5px; }
-
-/* Garante arredondamento do vídeo no modal */
-.ratio-16x9 {
-  border-top-left-radius: 20px;
-  border-top-right-radius: 20px;
-  overflow: hidden;
+/* --- MODAL E VÍDEO (RESTAURADO) --- */
+.modal-content { border-radius: 20px; border: none; background-color: #fff; }
+.ratio-16x9 { 
+  border-top-left-radius: 20px; border-top-right-radius: 20px; 
+  overflow: hidden; background-color: #000;
 }
+.ratio-16x9 iframe { border: none !important; width: 100%; height: 100%; display: block; }
+.ecoar-badge { background-color: #1a302e; color: #c58d2b; border: 1px solid #c58d2b; font-weight: 500; }
 
-.btn-gold {
-  background-color: #c58d2b !important;
-  color: white !important;
-  border: none;
-}
-
-.btn-gold:hover {
-  background-color: #a87724 !important; /* Um dourado um pouco mais escuro no hover */
-  color: white !important;
-}
-
-@media (max-width: 576px) {
-  .modal-body { padding: 1.25rem !important; }
-  .title-icon { height: 45px; }
-}
+/* ANIMAÇÕES */
+.animate-pulse { animation: pulse 1.5s infinite; }
+@keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
+.animate-fade-in { animation: fadeIn 0.4s ease-out; }
+@keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; } }
 </style>
