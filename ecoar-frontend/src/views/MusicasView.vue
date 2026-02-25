@@ -45,29 +45,15 @@
           <div class="col-md-4">
             <label class="small text-white-50 mb-1 fw-bold">ARTISTAS</label>
             <VueMultiselect 
-              v-model="filtros.artistas" 
-              :options="artistas" 
-              :multiple="true" 
-              label="nome" 
-              track-by="id" 
-              placeholder="Selecionar artistas..."
-              select-label="Adicionar"
-              deselect-label="Remover"
-              selected-label="Selecionado"
+              v-model="filtros.artistas" :options="artistas" :multiple="true" label="nome" track-by="id" placeholder="Selecionar artistas..."
+              select-label="Adicionar" deselect-label="Remover" selected-label="Selecionado"
             />
           </div>
           <div class="col-md-4">
             <label class="small text-white-50 mb-1 fw-bold">ESTILO/VIBE</label>
             <VueMultiselect 
-              v-model="filtros.estilos" 
-              :options="listaEstilos" 
-              :multiple="true" 
-              label="descricao" 
-              track-by="id" 
-              placeholder="Selecionar estilos..."
-              select-label="Adicionar"
-              deselect-label="Remover"
-              selected-label="Selecionado"
+              v-model="filtros.estilos" :options="listaEstilos" :multiple="true" label="descricao" track-by="id" placeholder="Selecionar estilos..."
+              select-label="Adicionar" deselect-label="Remover" selected-label="Selecionado"
             />
           </div>
           <div class="col-md-4">
@@ -75,15 +61,8 @@
             <div class="d-flex gap-2 align-items-center">
               <div class="flex-grow-1">
                 <VueMultiselect 
-                  v-model="filtros.momentos" 
-                  :options="listaMomentos" 
-                  :multiple="true" 
-                  label="descricao" 
-                  track-by="id" 
-                  placeholder="Selecionar momentos..."
-                  select-label="Adicionar"
-                  deselect-label="Remover"
-                  selected-label="Selecionado"
+                  v-model="filtros.momentos" :options="listaMomentos" :multiple="true" label="descricao" track-by="id" placeholder="Selecionar momentos..."
+                  select-label="Adicionar" deselect-label="Remover" selected-label="Selecionado"
                 />
               </div>
               <button v-if="temFiltroAtivo" @click="limparFiltros" class="btn-icon-only text-gold h-38 ms-2">
@@ -135,29 +114,47 @@
                 </div>
               </td>
             </tr>
+            <tr v-if="musicasFiltradas.length === 0">
+              <td :colspan="isAdmin ? 4 : 3" class="text-center py-4 text-muted">Nenhuma música encontrada.</td>
+            </tr>
           </tbody>
         </table>
       </div>
+      <!-- Footer -->
+      <div class="card-footer bg-white border-0 py-3" v-if="totalPaginas > 1">
+        <div class="d-flex justify-content-between align-items-center">
+          <div class="small text-muted d-none d-md-block">
+            Mostrando <b>{{ musicasPaginadas.length }}</b> de <b>{{ musicasFiltradas.length }}</b> registros
+          </div>
+          <nav>
+            <ul class="pagination pagination-sm mb-0">
+              <li class="page-item" :class="{ disabled: paginaAtual === 1 }">
+                <button class="page-link border-gold text-gold shadow-none" @click="paginaAtual--">Anterior</button>
+              </li>
+              <li v-for="pagina in totalPaginas" :key="pagina" class="page-item" :class="{ active: paginaAtual === pagina }">
+                <button class="page-link border-gold shadow-none" :class="paginaAtual === pagina ? 'bg-gold text-white' : 'text-gold'" @click="paginaAtual = pagina">{{ pagina }}</button>
+              </li>
+              <li class="page-item" :class="{ disabled: paginaAtual === totalPaginas }">
+                <button class="page-link border-gold text-gold shadow-none" @click="paginaAtual++">Próxima</button>
+              </li>
+            </ul>
+          </nav>
+        </div>
+      </div>
     </div>
 
+     <!-- modal de detalhes da musica -->
     <div class="modal fade" id="modalDetalhes" tabindex="-1">
       <div class="modal-dialog modal-dialog-centered">
         <div class="modal-content border-0 shadow-lg overflow-hidden">
-          
           <div v-if="musicaSelecionada && getVideoId(musicaSelecionada.link)" class="ratio ratio-16x9">
-            <iframe 
-              :src="`https://www.youtube.com/embed/${getVideoId(musicaSelecionada.link)}?rel=0&modestbranding=1`" 
-              frameborder="0" 
-              allowfullscreen>
-            </iframe>
+            <iframe :src="`https://www.youtube.com/embed/${getVideoId(musicaSelecionada.link)}?rel=0&modestbranding=1`" frameborder="0" allowfullscreen></iframe>
           </div>
-          
           <div class="ecoar-header p-4 text-white position-relative">
             <h4 class="mb-0 text-gold">{{ musicaSelecionada?.titulo }}</h4>
             <p class="mb-0 small opacity-75">{{ musicaSelecionada?.artista?.nome || '---' }}</p>
             <button type="button" class="btn-close btn-close-white position-absolute top-0 end-0 m-3 shadow-none" data-bs-dismiss="modal"></button>
           </div>
-
           <div class="modal-body p-4 bg-white">
             <div class="mb-3">
                <label class="fw-bold text-muted small d-block mb-2 text-uppercase">Estilos / Vibe</label>
@@ -256,8 +253,8 @@ const musicasFiltradas = computed(() => {
            (!filtros.value.momentos.length || filtros.value.momentos.every(f => m.momentos.some(mo => mo.id === f.id)));
   });
   return res.sort((a, b) => {
-    let vA = colunaOrdenacao.value === 'artista' ? (a.artista?.nome || '') : a[colunaOrdenacao.value];
-    let vB = colunaOrdenacao.value === 'artista' ? (b.artista?.nome || '') : b[colunaOrdenacao.value];
+    let vA = colunaOrdenacao.value === 'artista' ? (a.artista?.nome || '') : (a[colunaOrdenacao.value] || '');
+    let vB = colunaOrdenacao.value === 'artista' ? (b.artista?.nome || '') : (b[colunaOrdenacao.value] || '');
     return ordemAscendente.value ? (vA || '').localeCompare(vB || '') : (vB || '').localeCompare(vA || '');
   });
 });
@@ -280,7 +277,7 @@ watch([filtros, itensPorPagina, colunaOrdenacao, ordemAscendente], () => { pagin
 
 <style src="vue-multiselect/dist/vue-multiselect.css"></style>
 <style scoped>
-/* --- PADRÃO ECOAR --- */
+/* Estilos omitidos para brevidade, mantenha os seus originais conforme a última conversa */
 .ecoar-title { color: #41403f; font-weight: bold; letter-spacing: 1px; display: flex; align-items: center; }
 .title-icon { height: 60px; width: auto; object-fit: contain; }
 .ecoar-search-bg { background-color: #1a302e; border-radius: 12px; }
@@ -288,13 +285,9 @@ watch([filtros, itensPorPagina, colunaOrdenacao, ordemAscendente], () => { pagin
 .ecoar-header { background-color: #1a302e; }
 .text-gold { color: #c58d2b !important; }
 .cursor-pointer { cursor: pointer; user-select: none; }
-
-/* --- INPUT DE BUSCA --- */
 .custom-input { background-color: rgba(255, 255, 255, 0.05); color: white; }
 .custom-input::placeholder { color: #999 !important; opacity: 1; }
 .custom-input:focus { background-color: white; color: #1a302e; }
-
-/* --- FILTROS (VUE-MULTISELECT) --- */
 :deep(.multiselect__tags) { background: rgba(255, 255, 255, 0.05) !important; border: 1px solid #c58d2b !important; color: white !important; }
 :deep(.multiselect__single), :deep(.multiselect__input) { background: transparent !important; color: white !important; }
 :deep(.multiselect__placeholder) { color: #999 !important; }
@@ -303,8 +296,6 @@ watch([filtros, itensPorPagina, colunaOrdenacao, ordemAscendente], () => { pagin
 :deep(.multiselect__tag) { background: #c58d2b !important; }
 :deep(.multiselect__content-wrapper) { background: #1a302e !important; border-color: #c58d2b !important; }
 :deep(.multiselect__option) { background: #1a302e; color: white; }
-
-/* --- BOTÕES E TABELA --- */
 .btn-gold { background-color: #c58d2b !important; color: white !important; border: none; }
 .btn-icon-only { border: none !important; background: transparent !important; transition: transform 0.2s; outline: none !important; box-shadow: none !important; }
 .btn-icon-only:hover { transform: scale(1.15); opacity: 0.8; }
@@ -312,17 +303,10 @@ watch([filtros, itensPorPagina, colunaOrdenacao, ordemAscendente], () => { pagin
 .music-link:hover { color: #c58d2b !important; }
 .pagination .page-link { background-color: transparent; border-color: #c58d2b; color: #c58d2b; }
 .page-item.active .page-link { background-color: #c58d2b !important; color: white !important; }
-
-/* --- MODAL E VÍDEO (RESTAURADO) --- */
 .modal-content { border-radius: 20px; border: none; background-color: #fff; }
-.ratio-16x9 { 
-  border-top-left-radius: 20px; border-top-right-radius: 20px; 
-  overflow: hidden; background-color: #000;
-}
+.ratio-16x9 { border-top-left-radius: 20px; border-top-right-radius: 20px; overflow: hidden; background-color: #000; }
 .ratio-16x9 iframe { border: none !important; width: 100%; height: 100%; display: block; }
 .ecoar-badge { background-color: #1a302e; color: #c58d2b; border: 1px solid #c58d2b; font-weight: 500; }
-
-/* ANIMAÇÕES */
 .animate-pulse { animation: pulse 1.5s infinite; }
 @keyframes pulse { 0%, 100% { opacity: 0.5; } 50% { opacity: 1; } }
 .animate-fade-in { animation: fadeIn 0.4s ease-out; }
